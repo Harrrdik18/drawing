@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import "./App.css";
+import Toolbar from "./components/Toolbar";
+import Canvas from "./components/Canvas";
 
 function App() {
-  const canvasRef = useRef(null);
   const [tool, setTool] = useState("rectangle");
   const [isDrawing, setIsDrawing] = useState(false);
   const [elements, setElements] = useState([]);
@@ -16,27 +17,13 @@ function App() {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [strokeStyle, setStrokeStyle] = useState("solid");
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw all elements
-    elements.forEach((element, index) => {
-      drawElement(ctx, element, index === selectedElement);
-    });
-  }, [elements, selectedElement]);
-
+  // Drawing logic helpers
   const drawElement = (ctx, element, isSelected) => {
     ctx.save();
 
-    // Set stroke properties
     ctx.strokeStyle = element.strokeColor;
     ctx.lineWidth = element.strokeWidth;
 
-    // Set line dash pattern
     if (element.strokeStyle === "dashed") {
       ctx.setLineDash([5, 5]);
     } else if (element.strokeStyle === "dotted") {
@@ -45,7 +32,6 @@ function App() {
       ctx.setLineDash([]);
     }
 
-    // Set fill color
     ctx.fillStyle = element.fillColor;
 
     switch (element.type) {
@@ -71,14 +57,14 @@ function App() {
         ctx.lineTo(element.x2, element.y2);
         ctx.stroke();
         break;
+      default:
+        break;
     }
 
-    // Draw selection indicator
     if (isSelected) {
       ctx.strokeStyle = "#0066cc";
       ctx.lineWidth = 2;
       ctx.setLineDash([3, 3]);
-
       let bounds = getElementBounds(element);
       ctx.strokeRect(
         bounds.x - 5,
@@ -138,7 +124,6 @@ function App() {
         );
         return circleDistance <= element.radius;
       case "line":
-        // Simple line hit detection (within 5 pixels of line)
         const A = element.y2 - element.y1;
         const B = element.x1 - element.x2;
         const C = element.x2 * element.y1 - element.x1 * element.y2;
@@ -156,13 +141,12 @@ function App() {
     }
   };
 
-  const handleMouseDown = (e) => {
-    const canvas = canvasRef.current;
+  // Mouse event handlers
+  const handleMouseDown = (e, canvas) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    // Check if clicking on existing element
     for (let i = elements.length - 1; i >= 0; i--) {
       if (isPointInElement(x, y, elements[i])) {
         setSelectedElement(i);
@@ -177,7 +161,6 @@ function App() {
       }
     }
 
-    // Start drawing new element
     setSelectedElement(null);
     setIsDrawing(true);
 
@@ -210,8 +193,7 @@ function App() {
     setElements([...elements, newElement]);
   };
 
-  const handleMouseMove = (e) => {
-    const canvas = canvasRef.current;
+  const handleMouseMove = (e, canvas) => {
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -236,6 +218,8 @@ function App() {
           element.y1 += deltaY;
           element.x2 += deltaX;
           element.y2 += deltaY;
+          break;
+        default:
           break;
       }
 
@@ -266,6 +250,7 @@ function App() {
     setIsDragging(false);
   };
 
+  // Element property editing
   const updateSelectedElement = (property, value) => {
     if (selectedElement !== null) {
       const newElements = [...elements];
@@ -284,13 +269,14 @@ function App() {
     }
   };
 
+  // Actions
   const clearCanvas = () => {
     setElements([]);
     setSelectedElement(null);
   };
 
   const saveDrawing = () => {
-    const canvas = canvasRef.current;
+    const canvas = document.querySelector("canvas");
     const link = document.createElement("a");
     link.download = "drawing.png";
     link.href = canvas.toDataURL();
@@ -327,154 +313,36 @@ function App() {
 
   return (
     <div className="app">
-      <div className="toolbar">
-        <div className="tool-group">
-          <h3>Tools</h3>
-          <button
-            className={tool === "rectangle" ? "active" : ""}
-            onClick={() => setTool("rectangle")}
-          >
-            Rectangle
-          </button>
-          <button
-            className={tool === "circle" ? "active" : ""}
-            onClick={() => setTool("circle")}
-          >
-            Circle
-          </button>
-          <button
-            className={tool === "line" ? "active" : ""}
-            onClick={() => setTool("line")}
-          >
-            Line
-          </button>
-        </div>
-
-        <div className="tool-group">
-          <h3>Properties</h3>
-          <div className="property">
-            <label>Stroke Color:</label>
-            <input
-              type="color"
-              value={strokeColor}
-              onChange={(e) => setStrokeColor(e.target.value)}
-            />
-          </div>
-          <div className="property">
-            <label>Fill Color:</label>
-            <input
-              type="color"
-              value={fillColor}
-              onChange={(e) => setFillColor(e.target.value)}
-            />
-          </div>
-          <div className="property">
-            <label>Stroke Width:</label>
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={strokeWidth}
-              onChange={(e) => setStrokeWidth(parseInt(e.target.value))}
-            />
-            <span>{strokeWidth}px</span>
-          </div>
-          <div className="property">
-            <label>Stroke Style:</label>
-            <select
-              value={strokeStyle}
-              onChange={(e) => setStrokeStyle(e.target.value)}
-            >
-              <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
-            </select>
-          </div>
-        </div>
-
-        {selectedElement !== null && (
-          <div className="tool-group">
-            <h3>Selected Element</h3>
-            <div className="property">
-              <label>Stroke Color:</label>
-              <input
-                type="color"
-                value={elements[selectedElement].strokeColor}
-                onChange={(e) =>
-                  updateSelectedElement("strokeColor", e.target.value)
-                }
-              />
-            </div>
-            <div className="property">
-              <label>Fill Color:</label>
-              <input
-                type="color"
-                value={elements[selectedElement].fillColor}
-                onChange={(e) =>
-                  updateSelectedElement("fillColor", e.target.value)
-                }
-              />
-            </div>
-            <div className="property">
-              <label>Stroke Width:</label>
-              <input
-                type="range"
-                min="1"
-                max="20"
-                value={elements[selectedElement].strokeWidth}
-                onChange={(e) =>
-                  updateSelectedElement("strokeWidth", parseInt(e.target.value))
-                }
-              />
-              <span>{elements[selectedElement].strokeWidth}px</span>
-            </div>
-            <div className="property">
-              <label>Stroke Style:</label>
-              <select
-                value={elements[selectedElement].strokeStyle}
-                onChange={(e) =>
-                  updateSelectedElement("strokeStyle", e.target.value)
-                }
-              >
-                <option value="solid">Solid</option>
-                <option value="dashed">Dashed</option>
-                <option value="dotted">Dotted</option>
-              </select>
-            </div>
-            <button onClick={deleteSelectedElement} className="delete-btn">
-              Delete Element
-            </button>
-          </div>
-        )}
-
-        <div className="tool-group">
-          <h3>Actions</h3>
-          <button onClick={clearCanvas}>Clear Canvas</button>
-          <button onClick={saveDrawing}>Save as Image</button>
-          <button onClick={saveDrawingData}>Save Drawing Data</button>
-          <div className="file-input-wrapper">
-            <input
-              type="file"
-              accept=".json"
-              onChange={loadDrawingData}
-              id="load-file"
-            />
-            <label htmlFor="load-file">Load Drawing Data</label>
-          </div>
-        </div>
-      </div>
-
-      <div className="canvas-container">
-        <canvas
-          ref={canvasRef}
-          width={800}
-          height={600}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        />
-      </div>
+      <Toolbar
+        tool={tool}
+        setTool={setTool}
+        strokeColor={strokeColor}
+        setStrokeColor={setStrokeColor}
+        fillColor={fillColor}
+        setFillColor={setFillColor}
+        strokeWidth={strokeWidth}
+        setStrokeWidth={setStrokeWidth}
+        strokeStyle={strokeStyle}
+        setStrokeStyle={setStrokeStyle}
+        selectedElement={selectedElement}
+        elements={elements}
+        updateSelectedElement={updateSelectedElement}
+        deleteSelectedElement={deleteSelectedElement}
+        clearCanvas={clearCanvas}
+        saveDrawing={saveDrawing}
+        saveDrawingData={saveDrawingData}
+        loadDrawingData={loadDrawingData}
+      />
+      <Canvas
+        elements={elements}
+        selectedElement={selectedElement}
+        drawElement={drawElement}
+        getElementBounds={getElementBounds}
+        isPointInElement={isPointInElement}
+        handleMouseDown={handleMouseDown}
+        handleMouseMove={handleMouseMove}
+        handleMouseUp={handleMouseUp}
+      />
     </div>
   );
 }
