@@ -9,10 +9,10 @@ function Canvas({
   handleMouseDown,
   handleMouseMove,
   handleMouseUp,
+  cursor = "crosshair",
 }) {
   const canvasRef = useRef(null);
 
-  // Redraw canvas when elements or selection changes
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
@@ -28,6 +28,7 @@ function Canvas({
         ref={canvasRef}
         width={800}
         height={600}
+        style={{ cursor }}
         onMouseDown={(e) => handleMouseDown(e, canvasRef.current)}
         onMouseMove={(e) => handleMouseMove(e, canvasRef.current)}
         onMouseUp={handleMouseUp}

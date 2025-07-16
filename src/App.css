@@ -34,10 +34,12 @@
 }
 
 .tool-group button {
-  display: block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   margin-bottom: 8px;
-  padding: 10px 15px;
+  padding: 10px;
   border: 1px solid #ddd;
   background-color: #fff;
   color: #333;
@@ -45,6 +47,11 @@
   border-radius: 4px;
   font-size: 14px;
   transition: all 0.2s ease;
+}
+
+.tool-group button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .tool-group button:hover {
