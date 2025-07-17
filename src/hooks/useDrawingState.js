@@ -12,6 +12,8 @@ export const useDrawingState = () => {
   const [strokeWidth, setStrokeWidth] = useState(2);
   const [strokeStyle, setStrokeStyle] = useState("solid");
   const [cursor, setCursor] = useState("crosshair");
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeHandle, setResizeHandle] = useState(null);
 
   return {
     tool,
@@ -28,6 +30,10 @@ export const useDrawingState = () => {
     setDragOffset,
     isDragging,
     setIsDragging,
+    isResizing,
+    setIsResizing,
+    resizeHandle,
+    setResizeHandle,
     strokeColor,
     setStrokeColor,
     fillColor,

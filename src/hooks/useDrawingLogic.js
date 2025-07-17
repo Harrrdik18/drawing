@@ -81,6 +81,43 @@ export const useDrawingLogic = () => {
         bounds.width + 10,
         bounds.height + 10
       );
+
+      // Draw resize handles (corners and edges)
+      const handleSize = 8;
+      const half = handleSize / 2;
+      const points = [
+        // corners
+        { x: bounds.x - 5, y: bounds.y - 5, name: "nw" },
+        { x: bounds.x + bounds.width + 5, y: bounds.y - 5, name: "ne" },
+        { x: bounds.x - 5, y: bounds.y + bounds.height + 5, name: "sw" },
+        {
+          x: bounds.x + bounds.width + 5,
+          y: bounds.y + bounds.height + 5,
+          name: "se",
+        },
+        // edges
+        { x: bounds.x + bounds.width / 2, y: bounds.y - 5, name: "n" },
+        {
+          x: bounds.x + bounds.width / 2,
+          y: bounds.y + bounds.height + 5,
+          name: "s",
+        },
+        { x: bounds.x - 5, y: bounds.y + bounds.height / 2, name: "w" },
+        {
+          x: bounds.x + bounds.width + 5,
+          y: bounds.y + bounds.height / 2,
+          name: "e",
+        },
+      ];
+      ctx.setLineDash([]);
+      ctx.fillStyle = "#fff";
+      ctx.strokeStyle = "#0066cc";
+      points.forEach((pt) => {
+        ctx.beginPath();
+        ctx.rect(pt.x - half, pt.y - half, handleSize, handleSize);
+        ctx.fill();
+        ctx.stroke();
+      });
     }
 
     ctx.restore();
