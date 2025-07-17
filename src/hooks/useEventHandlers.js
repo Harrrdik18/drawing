@@ -121,8 +121,8 @@ export const useEventHandlers = (
       newElement.height = 0;
     } else if (tool === "circle") {
       newElement.type = "circle";
-      newElement.x = x;
-      newElement.y = y;
+      newElement.cx = x; // center x
+      newElement.cy = y; // center y
       newElement.radius = 0;
     } else if (tool === "line") {
       newElement.type = "line";
@@ -270,7 +270,7 @@ export const useEventHandlers = (
         currentElement.height = y - currentElement.y;
       } else if (tool === "circle") {
         const radius = Math.sqrt(
-          (x - currentElement.x) ** 2 + (y - currentElement.y) ** 2
+          (x - currentElement.cx) ** 2 + (y - currentElement.cy) ** 2
         );
         currentElement.radius = radius;
       } else if (tool === "line") {

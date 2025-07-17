@@ -10,8 +10,8 @@ export const useDrawingLogic = () => {
         };
       case "circle":
         return {
-          x: element.x,
-          y: element.y,
+          x: element.cx - element.radius,
+          y: element.cy - element.radius,
           width: element.radius * 2,
           height: element.radius * 2,
         };
@@ -50,13 +50,7 @@ export const useDrawingLogic = () => {
         break;
       case "circle":
         ctx.beginPath();
-        ctx.arc(
-          element.x + element.radius,
-          element.y + element.radius,
-          element.radius,
-          0,
-          2 * Math.PI
-        );
+        ctx.arc(element.cx, element.cy, element.radius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
         break;
@@ -120,8 +114,8 @@ export const useDrawingLogic = () => {
           y <= bounds.y + bounds.height
         );
       case "circle":
-        const centerX = element.x + element.radius;
-        const centerY = element.y + element.radius;
+        const centerX = element.cx;
+        const centerY = element.cy;
         const circleDistance = Math.sqrt(
           (x - centerX) ** 2 + (y - centerY) ** 2
         );
