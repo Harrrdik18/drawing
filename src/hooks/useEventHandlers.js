@@ -19,6 +19,8 @@ export const useEventHandlers = (
     selectedElement,
     dragOffset,
     isDrawing,
+    setTool, // <-- Added setTool
+    setCursor, // <-- Added setCursor
   },
   { getElementBounds, isPointInElement }
 ) => {
@@ -284,6 +286,11 @@ export const useEventHandlers = (
     setIsDragging(false);
     setIsResizing(false);
     setResizeHandle(null);
+    // Reset tool to "drag" after creating a shape
+    if (tool === "rectangle" || tool === "circle" || tool === "line") {
+      setTool("drag");
+      setCursor("default");
+    }
   };
 
   return { handleMouseDown, handleMouseMove, handleMouseUp };
