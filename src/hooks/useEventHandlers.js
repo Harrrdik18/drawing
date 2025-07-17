@@ -25,7 +25,7 @@ export const useEventHandlers = (
   { getElementBounds, isPointInElement }
 ) => {
   // Helper: hit-test for resize handles
-  const getHandleAtPoint = (x, y, element, handleSize = 8) => {
+  const getHandleAtPoint = (x, y, element, handleSize = 18) => {
     if (!element) return null;
     const bounds = getElementBounds(element);
     const half = handleSize / 2;

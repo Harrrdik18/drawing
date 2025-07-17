@@ -71,53 +71,38 @@ export const useDrawingLogic = () => {
     }
 
     if (isSelected) {
-      ctx.strokeStyle = "#0066cc";
-      ctx.lineWidth = 2;
-      ctx.setLineDash([3, 3]);
-      let bounds = getElementBounds(element);
-      ctx.strokeRect(
-        bounds.x - 5,
-        bounds.y - 5,
-        bounds.width + 10,
-        bounds.height + 10
-      );
-
-      // Draw resize handles (corners and edges)
-      const handleSize = 8;
-      const half = handleSize / 2;
-      const points = [
-        // corners
-        { x: bounds.x - 5, y: bounds.y - 5, name: "nw" },
-        { x: bounds.x + bounds.width + 5, y: bounds.y - 5, name: "ne" },
-        { x: bounds.x - 5, y: bounds.y + bounds.height + 5, name: "sw" },
-        {
-          x: bounds.x + bounds.width + 5,
-          y: bounds.y + bounds.height + 5,
-          name: "se",
-        },
-        // edges
-        { x: bounds.x + bounds.width / 2, y: bounds.y - 5, name: "n" },
-        {
-          x: bounds.x + bounds.width / 2,
-          y: bounds.y + bounds.height + 5,
-          name: "s",
-        },
-        { x: bounds.x - 5, y: bounds.y + bounds.height / 2, name: "w" },
-        {
-          x: bounds.x + bounds.width + 5,
-          y: bounds.y + bounds.height / 2,
-          name: "e",
-        },
-      ];
+      // Only show tiny dots of stroke color at vertices for resizing
       ctx.setLineDash([]);
-      ctx.fillStyle = "#fff";
-      ctx.strokeStyle = "#0066cc";
-      points.forEach((pt) => {
-        ctx.beginPath();
-        ctx.rect(pt.x - half, pt.y - half, handleSize, handleSize);
-        ctx.fill();
-        ctx.stroke();
-      });
+      ctx.lineWidth = 1;
+      ctx.fillStyle = element.strokeColor;
+      let dotRadius = 5;
+
+      if (element.type === "rectangle" || element.type === "circle") {
+        let bounds = getElementBounds(element);
+        // 4 corners
+        const points = [
+          { x: bounds.x, y: bounds.y }, // top-left
+          { x: bounds.x + bounds.width, y: bounds.y }, // top-right
+          { x: bounds.x, y: bounds.y + bounds.height }, // bottom-left
+          { x: bounds.x + bounds.width, y: bounds.y + bounds.height }, // bottom-right
+        ];
+        points.forEach((pt) => {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, dotRadius, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      } else if (element.type === "line") {
+        // Endpoints
+        const points = [
+          { x: element.x1, y: element.y1 },
+          { x: element.x2, y: element.y2 },
+        ];
+        points.forEach((pt) => {
+          ctx.beginPath();
+          ctx.arc(pt.x, pt.y, dotRadius, 0, 2 * Math.PI);
+          ctx.fill();
+        });
+      }
     }
 
     ctx.restore();
