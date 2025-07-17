@@ -84,8 +84,14 @@ export const useEventHandlers = (
         if (isPointInElement(x, y, elements[i])) {
           setSelectedElement(i);
           setIsDragging(true);
-          const bounds = getElementBounds(elements[i]);
-          setDragOffset({ x: x - bounds.x, y: y - bounds.y });
+          const element = elements[i];
+          if (element.type === "line") {
+            // For lines, use offset from the first point (x1, y1)
+            setDragOffset({ x: x - element.x1, y: y - element.y1 });
+          } else {
+            const bounds = getElementBounds(element);
+            setDragOffset({ x: x - bounds.x, y: y - bounds.y });
+          }
           return;
         }
       }
@@ -209,16 +215,16 @@ export const useEventHandlers = (
         element.height = newHeight;
       } else if (element.type === "circle") {
         // Resize circle by changing radius based on handle
-        let centerX = element.x + element.radius;
-        let centerY = element.y + element.radius;
+        let centerX = element.cx;
+        let centerY = element.cy;
         let dx = x - centerX;
         let dy = y - centerY;
         let newRadius = Math.max(Math.abs(dx), Math.abs(dy));
         if (newRadius < minSize / 2) newRadius = minSize / 2;
         element.radius = newRadius;
-        // Keep x/y as top-left of bounding box
-        element.x = centerX - newRadius;
-        element.y = centerY - newRadius;
+        // Center coordinates remain the same
+        element.cx = centerX;
+        element.cy = centerY;
       } else if (element.type === "line") {
         // Allow resizing line endpoints
         switch (resizeHandle) {
@@ -245,15 +251,20 @@ export const useEventHandlers = (
 
       switch (element.type) {
         case "rectangle":
-        case "circle":
           element.x = x - dragOffset.x;
           element.y = y - dragOffset.y;
           break;
+        case "circle":
+          element.cx = x - dragOffset.x + element.radius;
+          element.cy = y - dragOffset.y + element.radius;
+          break;
         case "line":
-          const deltaX = x - dragOffset.x - element.x1;
-          const deltaY = y - dragOffset.y - element.y1;
-          element.x1 += deltaX;
-          element.y1 += deltaY;
+          const newX1 = x - dragOffset.x;
+          const newY1 = y - dragOffset.y;
+          const deltaX = newX1 - element.x1;
+          const deltaY = newY1 - element.y1;
+          element.x1 = newX1;
+          element.y1 = newY1;
           element.x2 += deltaX;
           element.y2 += deltaY;
           break;
